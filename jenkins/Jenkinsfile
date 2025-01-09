@@ -8,8 +8,8 @@ pipeline {
                     sh """
                         pwd
 			ls -l
-                        echo "my-nginx:v1.0.${env.BUILD_TAG}"
-                        docker build --tag "my-nginx:v1.0.${env.BUILD_TAG}" .
+                        echo "my-nginx:v1.0.${env.BUILD_ID}"
+                        docker build --tag "my-nginx:v1.0.${env.BUILD_ID}" .
                     """
                 }
             }
