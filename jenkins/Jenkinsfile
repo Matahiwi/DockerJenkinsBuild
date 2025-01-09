@@ -14,15 +14,19 @@ pipeline {
                 }
             }
         }
-
         stage('Docker_Run_Nginx') {
+            agent {
+                docker { 
+                    image "my-nginx:v1.0.${env.BUILD_ID}"
+                    reuseNode true          // share workspace across agents
+                    }
+            }
             steps {
                 sh """
-                    docker create --publish 8083:8083 --name webserver --hostname webserver "my-nginx:v1.0.${env.BUILD_ID}"
-                    sleep 10
-                    docker start webserver
-                    sleep
-                    curl localhost:8083
+                    pwd
+                    ls -l
+                    ps 
+                    sleep 120
                 """
             }
         }
