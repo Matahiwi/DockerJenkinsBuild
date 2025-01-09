@@ -1,0 +1,13 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Docker_Build_Nginx') {
+            steps {
+                dir("Docker"){
+                    sh 'docker build --tag my-nginx:v1.0."${env.BUILD_TAG}"'
+                }
+            }
+        }
+    }
+}
