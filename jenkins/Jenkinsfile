@@ -7,11 +7,23 @@ pipeline {
                 dir("Docker"){
                     sh """
                         pwd
-			ls -l
+                        ls -l
                         echo "my-nginx:v1.0.${env.BUILD_ID}"
                         docker build --tag "my-nginx:v1.0.${env.BUILD_ID}" .
                     """
                 }
+            }
+        }
+
+        stage('Docker_Run_Nginx') {
+            steps {
+                sh """
+                    docker create --publish 8083:8083 --name webserver --hostname webserver "my-nginx:v1.0.${env.BUILD_ID}"
+                    sleep 10
+                    docker start webserver
+                    sleep
+                    curl localhost:8083
+                """
             }
         }
     }
