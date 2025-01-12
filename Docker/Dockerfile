@@ -1,6 +1,9 @@
 FROM alpine
 MAINTAINER Badger Bill "Badger@gmail.com"
+# Install Nginx:
 RUN apk update  && apk add nginx && mkdir -p /usr/share/nginx/html
+# Optionally Install some utilities:
+RUN apk --no-cache add curl wget netcat-openbsd
 ## Copy a new configuration file setting listen port to 8083
 COPY CONF/nginx.conf /etc/nginx/nginx.conf
 COPY CONF/index.html /usr/share/nginx/html/
