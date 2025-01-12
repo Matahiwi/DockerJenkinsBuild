@@ -26,6 +26,8 @@ pipeline {
                 sh """
                     apk add jq
                     pwd
+                    id
+                    id > root.txt
                     ls -l
                     ps 
                     sleep 60
