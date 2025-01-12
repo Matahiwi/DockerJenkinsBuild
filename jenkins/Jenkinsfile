@@ -19,14 +19,16 @@ pipeline {
                 docker { 
                     image "my-nginx:v1.0.${env.BUILD_ID}"
                     reuseNode true          // share workspace across agents
+                    args '-u root'
                     }
             }
             steps {
                 sh """
+                    apk add jq
                     pwd
                     ls -l
                     ps 
-                    sleep 120
+                    sleep 60
                 """
             }
         }
