@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment{
-        AWS_ACCOUNT_ID="969296761654"
+        AWS_ACCOUNT_ID=credentials('dev-aws-account') 
         AWS_DEFAULT_REGION="ap-southeast-2" 
         IMAGE_REPO_NAME="php"
         IMAGE_TAG="latest"
