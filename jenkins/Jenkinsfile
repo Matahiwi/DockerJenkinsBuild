@@ -3,30 +3,29 @@ pipeline {
     environment{
         AWS_ACCOUNT_ID=credentials('dev-aws-account') 
         AWS_DEFAULT_REGION="ap-southeast-2" 
+        SOURCE_IMAGE_REPO_NAME="tauputa"
         IMAGE_REPO_NAME="php"
         IMAGE_TAG="latest"
         REPOSITORY_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}"
     }
 
     stages {
-        stage('Logging into AWS ECR') {
+        stage('Building Docker Image') {
+            agent {  
+                docker { 
+                    image "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${SOURCE_IMAGE_REPO_NAME}:${IMAGE_TAG}"
+                    reuseNode true 
+                    }
+            }
             steps {
                 sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
-            }
-        }
-        stage('Building Docker Image') {
-            steps {
                 dir("Docker"){
-                    sh "docker build -t ${IMAGE_REPO_NAME}:${IMAGE_TAG} ."
+                    sh """
+                        docker build -t ${IMAGE_REPO_NAME}:${IMAGE_TAG} .
+                        docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} ${REPOSITORY_URI}:$IMAGE_TAG
+                        docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}
+                        """
                 }
-            }
-        }
-        stage('PushDocker Image to ECR') {
-            steps {
-                sh """
-                    docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} ${REPOSITORY_URI}:$IMAGE_TAG
-                    docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}
-                """
             }
         }
     }
