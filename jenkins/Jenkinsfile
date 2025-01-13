@@ -1,36 +1,31 @@
 pipeline {
     agent any
+    environment{
+        AWS_ACCOUNT_ID="969296761654"
+        AWS_DEFAULT_REGION="ap-southeast-2" 
+        IMAGE_REPO_NAME="php"
+        IMAGE_TAG="latest"
+        REPOSITORY_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}"
+    }
 
     stages {
-        stage('Docker_Build_Nginx') {
+        stage('Logging into AWS ECR') {
+            steps {
+                sh "aws ecr get-login-password - region ${AWS_DEFAULT_REGION} | docker login - username AWS - password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+            }
+        }
+        stage('Building Docker Image') {
             steps {
                 dir("Docker"){
-                    sh """
-                        pwd
-                        ls -l
-                        echo "my-nginx:v1.0.${env.BUILD_ID}"
-                        docker build --tag "my-nginx:v1.0.${env.BUILD_ID}" .
-                    """
+                    sh "docker build -t ${IMAGE_REPO_NAME}:${IMAGE_TAG} ."
                 }
             }
         }
-        stage('Docker_Run_Nginx') {
-            agent {
-                docker { 
-                    image "my-nginx:v1.0.${env.BUILD_ID}"
-                    reuseNode true          // share workspace across agents
-                    args '-u root'
-                    }
-            }
+        stage('PushDocker Image to ECR') {
             steps {
                 sh """
-                    apk add jq
-                    pwd
-                    id
-                    id > root.txt
-                    ls -l
-                    ps 
-                    sleep 60
+                    docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} ${REPOSITORY_URI}:$IMAGE_TAG
+                    docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}
                 """
             }
         }
